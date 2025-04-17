@@ -1,0 +1,47 @@
+{
+  "anonymous": [],
+  "72": [
+    {
+      "timestamp": "2025-04-17T16:07:16.508431",
+      "query": "Sự kết hợp từ các thành phần như Sinh tố, dâu tây, tạo nên một đồ uống có màu Hồng nhạt,thường được phục vụ trong Ly thủy tinh hình trụ tròn, Trên bề mặt được phủ Kem bơ trắng, dâu tây đỏ tươi. Lý tưởng cho Thưởng thức vào buổi sáng hoặc chiều muộn, phù hợp với những ai yêu thích hương vị nhẹ nhàng, thanh mát",
+      "response": "Chào anh Trần Văn Hoàng!\n\nDựa trên hình ảnh, em thấy anh thích một loại sinh tố dâu tây.  Em có một vài gợi ý cho anh:\n\n\n* **Strawberry Banana Smoothie Grande Nonfat Milk:**\n    * Giá: 60000\n\n* **Strawberry Banana Smoothie 2% Milk:**\n    * Giá: 55000\n\n* **Strawberry Banana Smoothie Soymilk:**\n    * Giá: 55000\n\n\nNếu anh muốn khám phá thêm, em có thể gợi ý anh xem qua các loại sinh tố trái cây khác."
+    },
+    {
+      "timestamp": "2025-04-17T16:08:16.949206",
+      "query": "tôi khát",
+      "response": "Chào anh Trần Văn Hoàng!  Anh đang khát đúng không ạ?  Em thấy có một vài gợi ý phù hợp nè:\n\n* **Cà phê:** Chúng tôi có các loại cà phê đen truyền thống, pha chế từ hạt cà phê chất lượng cao, mang đến hương vị thuần khiết và lượng caffeine giúp anh tỉnh táo.\n\n* **Đồ uống đá xay:**  Chúng tôi có các thức uống đá xay mát lạnh, với hương vị tự nhiên từ trà hoặc cà phê, được chế biến theo phương pháp đặc biệt, chắc chắn sẽ giúp anh giải khát tức thì.\n\n* **Tazo Chai Tea Latte:**  Đây là sự kết hợp giữa trà đen Tazo, quế, gừng, thảo quả và sữa tươi, tạo nên hương vị cay ấm, nhẹ nhàng.  Giá 33.000đ/ly. Thành phần: 2% Milk, calo: 190.0, chất xơ: 0.0, đường: 32.0, protein: 6.0, vitamin A: 10%, vitamin C: 0%, caffeine: 70.0.\n\n\nAnh muốn tìm hiểu thêm về loại nào không ạ?  Hay anh muốn thử một loại khác?"
+    },
+    {
+      "timestamp": "2025-04-17T16:10:27.743963",
+      "query": "có loại cà phê nào giá dưới 40000",
+      "response": "Chào anh Trần Văn Hoàng!  Dạ, anh muốn tìm loại cà phê dưới 40.000đ đúng không ạ?  Chúng em có một số lựa chọn như sau:\n\n* **Cà phê pha máy:** Có các mức giá 24.000đ, 26.000đ, 28.000đ và 30.000đ.\n* **Caramel Frappuccino:** Có giá từ 32.000đ đến 38.000đ.  (Tuy có vài loại vượt quá 40.000đ nhưng em vẫn liệt kê để anh tham khảo).\n* **Java Chip Frappuccino:** Giá 38.000đ/ly.\n\nAnh muốn biết thêm thông tin chi tiết về loại nào không ạ? Ví dụ như thành phần hoặc hương vị cụ thể?"
+    }
+  ],
+  "29": [
+    {
+      "timestamp": "2025-04-13T15:58:36.357452",
+      "query": "tôi khát",
+      "response": "Chào anh/chị User Name! Trời nóng thế này thì Shaken Iced Tazo Tea Lemonade là lựa chọn tuyệt vời đấy ạ!  Nó có 20% vitamin C, lại mát lạnh nữa.  Mỗi phần có 190 calo và 49g đường."
+    },
+    {
+      "timestamp": "2025-04-13T16:16:00.946996",
+      "query": "tôi muốn uống gì đó để đỡ buồn ngủ",
+      "response": "Lỗi khi xử lý câu hỏi: 'NoneType' object has no attribute 'get'"
+    },
+    {
+      "timestamp": "2025-04-13T16:18:11.835317",
+      "query": "tôi khát, muốn uống gì đó mát",
+      "response": "Lỗi khi xử lý câu hỏi: 'NoneType' object has no attribute 'get'"
+    },
+    {
+      "timestamp": "2025-04-13T16:26:53.324666",
+      "query": "tôi khát]",
+      "response": "Chào anh Son Heung-min! Trời nóng thế này thì một ly Shaken Iced Tazo Tea Lemonade thật tuyệt vời phải không ạ?  Nó mát lạnh, có 20% vitamin C và mỗi phần cỡ Venti có 190 calo, 49g đường.  Anh thích thử không ạ?"
+    },
+    {
+      "timestamp": "2025-04-13T16:27:34.573846",
+      "query": "tôi đang băn khoăn không biết đồ uống bạn gợi ý này hạng thứ bao nhiêu nhỉ",
+      "response": "Chào anh Son Heung-min!  Shaken Iced Tazo Tea Lemonade rất được khách hàng yêu thích đấy ạ!  Tuy nhiên, em không có thông tin xếp hạng cụ thể của sản phẩm này trong hệ thống.  Em xin lỗi vì sự bất tiện này!"
+    }
+  ]
+}
