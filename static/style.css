@@ -1,0 +1,414 @@
+/* ===== Reset và Font ===== */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    background-color: #1e1e2e;
+    color: #e2e8f0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+}
+
+/* ===== Layout Chính ===== */
+.main-container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+    width: 280px;
+    background-color: #181825;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #333;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: width 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+    flex-shrink: 0;
+}
+
+.sidebar h3 {
+    margin-top: 0;
+    color: #facc15;
+    border-bottom: 1px solid #444;
+    padding-bottom: 0.5rem;
+}
+
+.sidebar h4 {
+    margin: 0.8rem 0 0.4rem;
+    color: #ffffff;
+}
+
+.sidebar p,
+.sidebar div,
+.sidebar ul,
+.sidebar ol {
+    font-size: 0.85em;
+    line-height: 1.5;
+    margin-bottom: 0.8rem;
+}
+
+.sidebar strong {
+    color: #f87171;
+}
+/* Lịch sử đơn hàng */
+.purchase-history {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #1e293b;
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.purchase-history h4 {
+    color: #facc15;
+    margin-bottom: 0.75rem;
+}
+
+.purchase-history-item {
+    font-size: 0.9em;
+    border-bottom: 1px dashed #444;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
+    display: block !important; /* Đã chỉnh lại để hiện thay vì ẩn */
+}
+
+.purchase-history-item strong {
+    color: #f87171;
+}
+
+.purchase-history-item span {
+    display: block;
+    color: #cbd5e1;
+    margin-top: 0.2rem;
+    font-size: 0.85em;
+}
+
+
+/* Nút Đăng xuất */
+.logout-button {
+    margin-top: auto;
+    padding: 10px 15px;
+    background-color: #f87171;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+}
+
+.logout-button:hover {
+    background-color: #ef4444;
+}
+
+/* Toggle Button */
+#sidebar-toggle {
+    background: none;
+    border: none;
+    color: #facc15;
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
+/* Sidebar Collapse */
+.sidebar.sidebar-collapsed {
+    width: 60px;
+    padding: 1rem 0.5rem;
+    overflow: hidden;
+}
+
+.sidebar.sidebar-collapsed h3,
+.sidebar.sidebar-collapsed h4,
+.sidebar.sidebar-collapsed p,
+.sidebar.sidebar-collapsed ul,
+.sidebar.sidebar-collapsed ol,
+.sidebar.sidebar-collapsed .logout-button {
+    display: none;
+}
+.sidebar.sidebar-collapsed .purchase-history-item {
+    display: none !important;
+}
+
+/* ===== Khu vực Chat ===== */
+.chat-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #1e1e2e;
+    overflow: hidden;
+}
+
+/* Tiêu đề */
+.title-area {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.main-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #ffffff;
+    margin: 0;
+}
+
+/* Lịch sử chat */
+.chat-history {
+    flex-grow: 1;
+    padding: 1rem 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Tin nhắn */
+.chat-message {
+    padding: 0rem 1rem;
+    border-radius: 10px;
+    max-width: 75%;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    word-break: break-word;
+    white-space: pre-wrap;
+    display: flex;
+    align-items: flex-start;
+}
+
+.user-message {
+    background-color: #ef4444;
+    color: #ffffff;
+    align-self: flex-end;
+    margin-left: auto;
+    border-bottom-right-radius: 0;
+}
+
+.assistant-message {
+    background-color: #fcd34d;
+    color: #181825;
+    align-self: flex-start;
+    margin-right: auto;
+    border-bottom-left-radius: 0;
+    padding-left: 0.5rem        ;
+}
+
+.chat-message::before {
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    margin-right: 10px;
+    flex-shrink: 0;
+    text-align: center;
+    line-height: 36px;
+    font-size: 24px;
+}
+
+.user-message::before { 
+     background-color: #ef4444;
+    color: white;
+    font-size: 26px;
+}
+
+.assistant-message::before { 
+
+    background-color: #fcd34d;
+    color: #181825;
+    display: none;
+}
+
+/* Khu vực nhập liệu */
+.input-area {
+    display: flex;
+    padding: 1rem;
+    border-top: 1px solid #333;
+    background-color: #181825;
+}
+
+.input-area input[type="text"] {
+    flex-grow: 1;
+    padding: 0.8rem 1rem;
+    border: 1px solid #444;
+    border-radius: 20px;
+    margin-right: 0.5rem;
+    background-color: #2a2a3a;
+    color: #ffffff;
+    font-size: 1rem;
+}
+
+.input-area input[type="text"]::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.input-area button {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    background-color: #facc15;
+    color: #181825;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.input-area button:hover {
+    background-color: #eab308;
+}
+
+.input-area button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+/* Trang Auth */
+.auth-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    flex-direction: column;
+    background-color: #1e1e2e;
+}
+
+.auth-container {
+    text-align: center;
+    padding: 30px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background-color: #181825;
+    color: #ffffff;
+}
+
+.auth-container h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 1.5rem;
+}
+
+.auth-container h3 {
+    color: #facc15;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.auth-container video {
+    border: 1px solid #444;
+    margin-top: 15px;
+    transform: scaleX(-1);
+}
+
+.auth-container #status {
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #f87171;
+}
+
+/* Style for the video container to position canvas on top */
+.video-container {
+    position: relative;
+    width: 800px;
+    height: 600px;
+    margin: 15px auto;
+}
+
+#video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 800px;
+    height: 600px;
+    pointer-events: none;
+    transform: scaleX(-1);
+}
+
+#video {
+    display: block;
+    border: 1px solid #444;
+    width: 100%;
+    height: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        max-height: 40vh;
+        border-right: none;
+        border-bottom: 1px solid #333;
+    }
+
+    .chat-area {
+        height: auto;
+    }
+
+    .main-title {
+        font-size: 2rem;
+    }
+
+    .chat-history {
+        padding: 0.75rem;
+    }
+
+    .chat-message {
+        max-width: 90%;
+    }
+
+    .input-area input[type="text"] {
+        padding: 0.6rem 0.8rem;
+    }
+
+    .input-area button {
+        padding: 0.6rem 1rem;
+    }
+}
+
+/* ----- Trang Choice (choice.html) ----- */
+.choice-container {
+    text-align: center;
+    padding: 40px; /* Increased padding */
+    border: 1px solid #333;
+    border-radius: 8px;
+    background-color: #181825;
+    color: #ffffff;
+    max-width: 500px; /* Increased width */
+    margin: auto; /* Center container */
+}
+
+.choice-container h1 {
+    font-size: 2.2rem; /* Slightly larger */
+    margin-bottom: 2rem;
+}
+
+.choice-button {
+    display: block; /* Buttons on separate lines */
+    width: 80%; /* Control button width */
+    margin: 1.5rem auto; /* Increased spacing */
+    padding: 1rem 1.5rem; /* Larger buttons */
+    font-size: 1.2rem; /* Larger text */
+    border-radius: 8px;
+}
+/* Remove background and padding for user messages that contain only an image */
+.chat-message.user-message.image-message {
+    background-color: transparent;
+    padding: 0; 
+    justify-content: flex-end; 
+  }
+  
+  .chat-message.image-message img {
+      display: block; /* Ensures image behaves like a block element within the div */
+  }
