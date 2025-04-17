@@ -1,0 +1,276 @@
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>RAG Chatbot</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <div class="main-container">
+            <!-- Sidebar -->
+            <div class="sidebar" id="sidebar">
+                <!-- Sidebar Toggle Button -->
+                <button id="sidebar-toggle">☰</button> <br>
+                {% if user_info %}
+                    <h3>👤 Thông tin người dùng</h3>
+                    <p><strong>Tên:</strong> {{ user_info.name }}</p>
+                    <p><strong>ID:</strong> {{ user_info.id }}</p>
+                    <h3>🛍️ Lịch sử mua hàng</h3>
+                    {% if purchase_history %}
+                        {% for item in purchase_history %}
+                            <div class="purchase-history-item">
+                                <strong>{{ item.date }}</strong><br>
+                                Sản phẩm: {{ item.product }}<br>
+                                Số lượng: {{ item.quantity }}<br>
+                                Giá: {{ item.price }}đ<br>
+                                Rate: {{ item.rate }}⭐
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>Chưa có lịch sử mua hàng.</p>
+                    {% endif %}
+                {% else %}
+                    <h3>👤 Khách ẩn danh</h3>
+                    <p>Bạn đang chat ẩn danh. Hãy <a href="{{ url_for('authenticate') }}" style="color: #facc15;">xác thực</a> hoặc <a href="{{ url_for('register') }}" style="color: #facc15;">đăng ký</a> để có trải nghiệm cá nhân hóa.</p>
+                {% endif %}
+
+                <a href="{{ url_for('logout') }}" style="text-decoration: none; margin-top: auto;">
+                    <button class="logout-button">🚪 Đăng xuất</button>
+                </a>
+
+                <hr style="border-color: #444; margin: 1rem 0;">
+                <h3>ℹ️ Thông tin thêm</h3>
+                <h4>About</h4>
+                <p style="font-size: 0.85em;">This is a RAG (Retrieval-Augmented Generation) chatbot...</p>
+                <h4>Features</h4>
+                <ul style="font-size: 0.85em; padding-left: 20px;">
+                    <li>🔍 Semantic search</li>
+                    <li>🧠 Context-aware responses</li>
+                    <li>📚 Knowledge base integration</li>
+                    <li>👤 Personalized recommendations</li>
+                    <li>📸 Face Authentication</li>
+                </ul>
+                <h4>How to use</h4>
+                <ol style="font-size: 0.85em; padding-left: 20px;">
+                    <li>Look at the camera for auth.</li>
+                    <li>Type your question.</li>
+                    <li>Wait for the response.</li>
+                </ol>
+                <hr style="border-color: #444; margin: 1rem 0;">
+                <p style="font-size: 0.8em;">Need help? Contact us:<br>📧 tranhoang0320@gmail.com</p>
+            </div>
+
+            <!-- Main Chat Area -->
+            <div class="chat-area">
+                <div class="title-area">
+                    <h1 class="main-title">🤖 RAG Chatbot</h1>
+                </div>
+
+                <!-- Chat History -->
+                <div class="chat-history" id="chat-history">
+                    <div class="chat-message assistant-message">
+                        Xin chào {{ user_info.name if user_info else 'bạn' }}! Tôi có thể giúp gì cho bạn?
+                    </div>
+                    <!-- Messages appended here by JavaScript -->
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-area">
+                    <input type="text" id="user-input" placeholder="Bạn cần tôi giúp gì? 🤔" autocomplete="off">
+                    <button id="send-button">Gửi</button>
+                    <input type="file" id="image-upload" accept="image/*" style="display:none;">
+                    <button id="upload-button" title="Tải ảnh lên">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload" viewBox="0 0 16 16">
+                          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                          <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const chatHistory = document.getElementById('chat-history');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+
+            const imageUpload = document.getElementById('image-upload');
+            const uploadButton = document.getElementById('upload-button');
+
+            function addMessage(role, content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('chat-message');
+                messageDiv.classList.add(role === 'user' ? 'user-message' : 'assistant-message');
+
+                // Simple Markdown link handling
+                content = content.replace(/\(?(https?:\/\/[^\s]+)\)?/g, '<a href="$1" target="_blank" style="color: inherit;">$1</a>');
+                // Render newlines as <br>
+                content = content.replace(/\n/g, '<br>');
+
+                messageDiv.innerHTML = content;
+                chatHistory.appendChild(messageDiv);
+                chatHistory.scrollTop = chatHistory.scrollHeight; // Scroll to bottom
+                return messageDiv; // Return the created div
+            }
+
+            function addImageMessage(role, imageDataUrl) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('chat-message');
+                messageDiv.classList.add(role === 'user' ? 'user-message' : 'assistant-message');
+                messageDiv.classList.add('image-message');
+                
+                const img = document.createElement('img');
+                img.src = imageDataUrl;
+                img.alt = "Uploaded Image";
+                img.style.maxWidth = "100%"; 
+                img.style.maxHeight = "400px";
+                img.style.borderRadius = "8px";
+                
+                messageDiv.appendChild(img);
+                chatHistory.appendChild(messageDiv);
+                chatHistory.scrollTop = chatHistory.scrollHeight; // Scroll to bottom
+            }
+
+            async function sendMessage() {
+                const prompt = userInput.value.trim();
+                if (!prompt) return;
+
+                addMessage('user', prompt);
+                userInput.value = '';
+                sendButton.disabled = true;
+                userInput.disabled = true;
+                sendButton.textContent = '...';
+
+                // Thinking indicator
+                const thinkingDiv = document.createElement('div');
+                thinkingDiv.classList.add('chat-message', 'assistant-message');
+                thinkingDiv.innerHTML = '<i>🤔 Đang xử lý...</i>';
+                thinkingDiv.id = 'thinking-indicator';
+                chatHistory.appendChild(thinkingDiv);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+
+                try {
+                    const response = await fetch("{{ url_for('chat') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ prompt: prompt })
+                    });
+
+                    // Remove thinking indicator
+                    const indicator = document.getElementById('thinking-indicator');
+                    if (indicator) {
+                        chatHistory.removeChild(indicator);
+                    }
+
+                    if (!response.ok) {
+                        let errorMsg = `Lỗi ${response.status}: ${response.statusText}`;
+                        try {
+                            const errorData = await response.json();
+                            errorMsg = errorData.error || errorMsg;
+                        } catch (e) { /* Ignore if body isn't JSON */ }
+                        addMessage('assistant', `⚠️ Xin lỗi, đã có lỗi xảy ra: ${errorMsg}`);
+                    } else {
+                        const data = await response.json();
+                        if (data.role === 'assistant') {
+                            addMessage('assistant', data.content);
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    const indicator = document.getElementById('thinking-indicator');
+                    if (indicator) {
+                        chatHistory.removeChild(indicator);
+                    }
+                    addMessage('assistant', '⚠️ Xin lỗi, đã có lỗi kết nối mạng. Vui lòng thử lại.');
+                } finally {
+                    sendButton.disabled = false;
+                    userInput.disabled = false;
+                    sendButton.textContent = 'Gửi';
+                    userInput.focus();
+                }
+            }
+
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter' && !event.shiftKey) { // Send on Enter
+                    event.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // Sidebar Toggle Functionality
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('sidebar-collapsed'); // Toggle class on the sidebar directly
+                // Change button icon based on state (optional)
+                sidebarToggle.textContent = sidebar.classList.contains('sidebar-collapsed') ? '☰' : '✕'; 
+            });
+
+            // Initial focus on input
+            userInput.focus();
+
+            uploadButton.addEventListener('click', () => {
+                imageUpload.click();
+            });
+
+            imageUpload.addEventListener('change', async () => {
+                const file = imageUpload.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = async function(e) {
+                        const imageDataUrl = e.target.result;
+                        addImageMessage('user', imageDataUrl); // Display the image first
+                        
+                        // Add processing indicator below the image
+                        const processingMsgDiv = addMessage('assistant', '<i>Đang xử lý ảnh...</i>');
+                        processingMsgDiv.id = 'image-processing-indicator'; // Give it an ID
+
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        await processImageBackend(formData); // Call the backend processing function
+                    }
+                    reader.readAsDataURL(file);
+                }
+                 // Clear the file input value to allow uploading the same file again
+                 imageUpload.value = null;
+            });
+
+            async function processImageBackend(formData) { // Renamed function
+                try {
+                    const response = await fetch("{{ url_for('process_image') }}", {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                     // Remove processing indicator
+                    const indicator = document.getElementById('image-processing-indicator');
+                    if (indicator) {
+                        chatHistory.removeChild(indicator);
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(`Lỗi ${response.status}: ${response.statusText}`);
+                    }
+
+                    const result = await response.json();
+                    addMessage('assistant', result.content); // Display the final answer
+                } catch (error) {
+                     // Ensure indicator is removed even on error
+                    const indicator = document.getElementById('image-processing-indicator');
+                    if (indicator) {
+                        chatHistory.removeChild(indicator);
+                    }
+                    console.error('Error processing image:', error);
+                    addMessage('assistant', '⚠️ Xin lỗi, đã có lỗi xảy ra khi xử lý hình ảnh.');
+                }
+            }
+
+        </script>
+    </body>
+    </html> 

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác thực - RAG Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Include Socket.IO client library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        /* Style for the video container to position canvas on top */
+        .video-container {
+            position: relative; /* Needed for absolute positioning of canvas */
+            width: 320px; /* Match video width */
+            height: 240px; /* Match video height */
+            margin: 15px auto; /* Center the container */
+        }
+        #video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; 
+            transform: scaleX(-1);
+        }
+         #video {
+            display: block; 
+            border: 1px solid #444;
+         }
+    </style>
+</head>
+<body class="auth-body">
+    <div class="auth-container">
+        <h1>🤖 RAG Chatbot</h1>
+        <h3>👤 Vui lòng nhìn vào camera để xác thực</h3>
+        <!-- Container for video and canvas overlay -->
+        <div class="video-container">
+            <video id="video" width="320" height="240" autoplay playsinline></video>
+            <canvas id="video-overlay" width="320" height="240"></canvas> <!-- Canvas for drawing bbox -->
+        </div>
+        <canvas id="canvas" width="320" height="240" style="display:none;"></canvas> <!-- Hidden canvas for frame capture -->
+        <p id="status">Đang khởi tạo camera...</p>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const captureCanvas = document.getElementById('canvas'); // For sending frames
+        const captureContext = captureCanvas.getContext('2d');
+        const overlayCanvas = document.getElementById('video-overlay'); // For drawing bbox
+        const overlayContext = overlayCanvas.getContext('2d');
+        const statusElement = document.getElementById('status');
+        let stream = null;
+        let frameInterval = null;
+
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('Connected', socket.id);
+            statusElement.textContent = 'Đã kết nối, khởi tạo camera...';
+            startCamera();
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from Socket.IO server');
+            statusElement.textContent = 'Mất kết nối. Vui lòng tải lại trang.';
+            stopCameraAndProcessing();
+            clearOverlay(); 
+        });
+
+        socket.on('connect_error', (err) => {
+            console.error('Socket.IO connection error:', err);
+            statusElement.textContent = 'Lỗi kết nối tới server. Vui lòng thử lại.';
+            stopCameraAndProcessing();
+            clearOverlay(); // Clear drawings on error
+        });
+
+        socket.on('auth_result', (data) => {
+            console.log('Auth result:', data);
+            clearOverlay(); // Clear previous drawings
+
+            if (data.bbox && data.bbox.length === 4) {
+                drawBoundingBox(data.bbox, data.confidence, data.success);
+            }
+
+            if (data.success) {
+                statusElement.textContent = `Xác thực thành công! Chào ${data.user_info.name}! Đang xác nhận...`;
+                confirmAuthentication(data.user_info);
+            } else {
+                if (data.message) {
+                    statusElement.textContent = data.message;
+                }
+            }
+        });
+
+        function drawBoundingBox(bbox, confidence, isSuccess) {
+            overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height); // Clear previous drawings first
+            overlayContext.strokeStyle = isSuccess ? '#00FF00' : '#FFCC00'; // Green if success, Yellow otherwise
+            overlayContext.lineWidth = 2;
+            overlayContext.font = '14px Arial';
+            overlayContext.fillStyle = overlayContext.strokeStyle;
+
+            const [x1, y1, x2, y2] = bbox;
+            overlayContext.strokeRect(x1, y1, x2 - x1, y2 - y1);
+
+            if (confidence !== null && confidence !== undefined) {
+                const confText = `Conf: ${confidence.toFixed(2)}`;
+                const textY = y1 > 20 ? y1 - 5 : y1 + 15; // Position text above or below box based on y1
+
+                // Save, Un-flip, Draw Text, Restore to prevent mirrored text
+                overlayContext.save();
+                overlayContext.translate(overlayCanvas.width, 0);
+                overlayContext.scale(-1, 1);
+                overlayContext.fillStyle = isSuccess ? '#00FF00' : '#FFCC00';
+                overlayContext.textAlign = 'left';
+                const unFlippedTextX = overlayCanvas.width - x2;
+                overlayContext.fillText(confText, unFlippedTextX, textY);
+                overlayContext.restore();
+            }
+        }
+
+        function clearOverlay() {
+            overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+        }
+
+        async function confirmAuthentication(userInfo) {
+            try {
+                const response = await fetch('/confirm_auth', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ user_info: userInfo })
+                });
+                const result = await response.json();
+                if (response.ok && result.status === 'ok') {
+                    console.log('Session confirmed by server.');
+                    statusElement.textContent = 'Phiên đã xác nhận. Đang chuyển hướng...';
+                    stopCameraAndProcessing(); // Stop camera now before redirect
+                    clearOverlay();
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    console.error('Failed to confirm auth:', result.message);
+                    statusElement.textContent = `Lỗi xác nhận phiên: ${result.message || 'Unknown error'}.`;
+                }
+            } catch (error) {
+                console.error('Error confirming auth:', error);
+                statusElement.textContent = 'Lỗi kết nối khi xác nhận phiên.';
+            }
+        }
+
+        async function startCamera() {
+             if (stream) return;
+             try {
+                 stream = await navigator.mediaDevices.getUserMedia({ video: { frameRate: { ideal: 10 } }, audio: false });
+                 video.srcObject = stream;
+                 statusElement.textContent = 'Đang chờ nhận diện...';
+                 startSendingFrames();
+             } catch (err) {
+                 console.error("Error accessing camera: ", err);
+                 statusElement.textContent = 'Lỗi: Không thể truy cập camera.';
+                 stopCameraAndProcessing();
+             }
+         }
+
+        function startSendingFrames() {
+             if (frameInterval) clearInterval(frameInterval);
+             frameInterval = setInterval(() => {
+                 if (!stream || !video.readyState >= video.HAVE_ENOUGH_DATA || !socket.connected) return;
+                 try {
+                     captureContext.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
+                     const imageDataUrl = captureCanvas.toDataURL('image/jpeg', 0.7);
+                     socket.emit('video_frame', { image: imageDataUrl });
+                 } catch (error) {
+                      console.error("Error capturing/sending frame:", error);
+                 }
+             }, 500);
+         }
+
+        function stopCameraAndProcessing() {
+            console.log("Stopping camera and frame sending.");
+            if (frameInterval) {
+                clearInterval(frameInterval);
+                frameInterval = null;
+            }
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                                video.srcObject = null;
+            }
+             // clearOverlay(); // Optionally clear here too
+        }
+
+        window.addEventListener('beforeunload', stopCameraAndProcessing);
+
+    </script>
+</body>
+</html> 
