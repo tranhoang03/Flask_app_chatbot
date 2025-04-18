@@ -127,7 +127,7 @@ class OptimizedRAGSystem:
             os.makedirs(self.config.description_vector_store_path, exist_ok=True)
             conn = sqlite3.connect(self.config.db_path)
             cursor = conn.cursor()
-            cursor.execute("SELECT Name, Product_Prep, Descriptions, Price FROM Product;")
+            cursor.execute("SELECT Name_Product, Descriptions FROM Product;")
             products = cursor.fetchall()
             conn.close()
 
@@ -136,10 +136,10 @@ class OptimizedRAGSystem:
                 return None
 
             descriptions = [
-                f"{product[2]}" for product in products
+                f"{product[1]}" for product in products
             ]
             metadatas = [
-                {"name": product[0] + product[1], "description": product[2], "price": product[3]} for product in products
+                {"name": product[0], "description": product[1]} for product in products
             ]
 
             vector_store = FAISS.from_texts(
@@ -309,7 +309,7 @@ class OptimizedRAGSystem:
             )
             if is_image_upload:
                 context = [
-                    f"Tên: {doc.metadata['name']}, Giá: {doc.metadata['price']}, Mô tả: {doc.page_content}"
+                    f"Tên: {doc.metadata['name']}, Mô tả: {doc.page_content}"
                     for doc in docs
                 ]
             else:
