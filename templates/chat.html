@@ -70,9 +70,9 @@
                 <!-- Chat History -->
                 <div class="chat-history" id="chat-history">
                     <div class="chat-message assistant-message">
-                        Xin chào {{ user_info.name if user_info else 'bạn' }}! Tôi có thể giúp gì cho bạn?
+                        <p>Xin chào {{ user_info.name if user_info else 'bạn' }}! Tôi có thể giúp gì cho bạn?</p>
                     </div>
-                    <!-- Messages appended here by JavaScript -->
+                 
                 </div>
 
                 <!-- Input Area -->
@@ -103,15 +103,15 @@
                 messageDiv.classList.add('chat-message');
                 messageDiv.classList.add(role === 'user' ? 'user-message' : 'assistant-message');
 
-                // Simple Markdown link handling
+         
                 content = content.replace(/\(?(https?:\/\/[^\s]+)\)?/g, '<a href="$1" target="_blank" style="color: inherit;">$1</a>');
                 // Render newlines as <br>
                 content = content.replace(/\n/g, '<br>');
 
                 messageDiv.innerHTML = content;
                 chatHistory.appendChild(messageDiv);
-                chatHistory.scrollTop = chatHistory.scrollHeight; // Scroll to bottom
-                return messageDiv; // Return the created div
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+                return messageDiv;
             }
 
             function addImageMessage(role, imageDataUrl) {
@@ -145,7 +145,7 @@
                 // Thinking indicator
                 const thinkingDiv = document.createElement('div');
                 thinkingDiv.classList.add('chat-message', 'assistant-message');
-                thinkingDiv.innerHTML = '<i>🤔 Đang xử lý...</i>';
+                thinkingDiv.innerHTML = '<i>Đang xử lý...🤔</i>';
                 thinkingDiv.id = 'thinking-indicator';
                 chatHistory.appendChild(thinkingDiv);
                 chatHistory.scrollTop = chatHistory.scrollHeight;
@@ -196,23 +196,22 @@
 
             sendButton.addEventListener('click', sendMessage);
             userInput.addEventListener('keypress', function(event) {
-                if (event.key === 'Enter' && !event.shiftKey) { // Send on Enter
+                if (event.key === 'Enter' && !event.shiftKey) { 
                     event.preventDefault();
                     sendMessage();
                 }
             });
-            
-            // Sidebar Toggle Functionality
+       
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.getElementById('sidebar-toggle');
 
             sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('sidebar-collapsed'); // Toggle class on the sidebar directly
-                // Change button icon based on state (optional)
+                sidebar.classList.toggle('sidebar-collapsed');
+         
                 sidebarToggle.textContent = sidebar.classList.contains('sidebar-collapsed') ? '☰' : '✕'; 
             });
 
-            // Initial focus on input
+          
             userInput.focus();
 
             uploadButton.addEventListener('click', () => {
@@ -225,30 +224,30 @@
                     const reader = new FileReader();
                     reader.onload = async function(e) {
                         const imageDataUrl = e.target.result;
-                        addImageMessage('user', imageDataUrl); // Display the image first
+                        addImageMessage('user', imageDataUrl); 
                         
-                        // Add processing indicator below the image
+                   
                         const processingMsgDiv = addMessage('assistant', '<i>Đang xử lý ảnh...</i>');
-                        processingMsgDiv.id = 'image-processing-indicator'; // Give it an ID
+                        processingMsgDiv.id = 'image-processing-indicator';
 
                         const formData = new FormData();
                         formData.append('image', file);
-                        await processImageBackend(formData); // Call the backend processing function
+                        await processImageBackend(formData); 
                     }
                     reader.readAsDataURL(file);
                 }
-                 // Clear the file input value to allow uploading the same file again
+
                  imageUpload.value = null;
             });
 
-            async function processImageBackend(formData) { // Renamed function
+            async function processImageBackend(formData) { 
                 try {
                     const response = await fetch("{{ url_for('process_image') }}", {
                         method: 'POST',
                         body: formData,
                     });
 
-                     // Remove processing indicator
+               
                     const indicator = document.getElementById('image-processing-indicator');
                     if (indicator) {
                         chatHistory.removeChild(indicator);
@@ -259,9 +258,9 @@
                     }
 
                     const result = await response.json();
-                    addMessage('assistant', result.content); // Display the final answer
+                    addMessage('assistant', result.content); 
                 } catch (error) {
-                     // Ensure indicator is removed even on error
+                    
                     const indicator = document.getElementById('image-processing-indicator');
                     if (indicator) {
                         chatHistory.removeChild(indicator);
