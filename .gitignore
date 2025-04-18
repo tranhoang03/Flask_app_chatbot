@@ -27,13 +27,13 @@ wheels/
 # Virtual Environment
 venv/
 ENV/
-
+buffalo_l/
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
-
+*.zip
 
 # Logs
 *.log
