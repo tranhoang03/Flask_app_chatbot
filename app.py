@@ -1,6 +1,7 @@
 import eventlet 
 eventlet.monkey_patch() 
-
+import base64
+import os
 from flask import Flask, render_template, request, session, jsonify, redirect, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room # Import SocketIO components
 from models.rag_system import OptimizedRAGSystem
@@ -15,7 +16,7 @@ import cv2
 from models.send_img import get_info
 import logging
 from utils import get_purchase_history
-from models.img_export_info import LLMExtract
+from models.extract_info import LLMExtract
 load_dotenv()
 
 app = Flask(__name__)
@@ -302,41 +303,30 @@ def process_image():
              # This case might be redundant but kept for robustness
             return jsonify({'error': 'Invalid file provided'}), 400
 
-        # --- Send image to OCR API --- 
         if not file_path:
-             print("Error: file_path is None before OCR call.")
+             print("Error: file_path is None.")
              return jsonify({'error': 'Internal error determining file path'}), 500
-             
-        API_URL = "https://14dc-34-82-237-76.ngrok-free.app/ocr" 
-        try:
-            ocr_response = get_info.send_image(file_path, API_URL)
-            if not ocr_response:
-                if os.path.exists(file_path): # Simplified cleanup check
-                    try: os.remove(file_path)
-                    except Exception as rm_err: print(f"Error cleaning up file {file_path}: {rm_err}")
-                return jsonify({'error': 'Failed to process image with OCR'}), 500
-        except Exception as ocr_err:
-            print(f"Exception during OCR API call: {ocr_err}")
-            if os.path.exists(file_path):
-                try: os.remove(file_path)
-                except Exception as rm_err: print(f"Error cleaning up file {file_path} after OCR error: {rm_err}")
-            return jsonify({'error': 'Exception during OCR processing'}), 500
-        
-        # --- Extract Information from OCR Response ---
-        extracted_info = LLMExtract.llm_extract(drink_description=ocr_response) 
+
+        encoded_image = LLMExtract.image_to_base64(file_path)
+
+        extracted_info = LLMExtract.llm_extract(encoded_image=encoded_image) 
         if not extracted_info:
             return jsonify({'error': 'Failed to extract information from image'}), 500
 
         # --- Format Extracted Information into a Query ---
         search_query = f"Sự kết hợp từ các thành phần như {extracted_info.ingredients}, " \
-                       f"tạo nên một đồ uống có màu {extracted_info.drink_color},thường được phục vụ trong {extracted_info.container_type}, " \
-                       f"Trên bề mặt được phủ {extracted_info.topping}. Lý tưởng cho {extracted_info.suitable_for}"
+               f"tạo nên một đồ uống có màu {extracted_info.drink_color}, " \
+               f"thường được phục vụ trong {extracted_info.container_type}."
 
-        # --- Use Extracted Information for Vector Search --- 
+        # Thêm phần topping nếu có
+        if extracted_info.topping != 'None':
+            search_query += f" Trên bề mặt được phủ {extracted_info.topping}"
+
+        search_query += f". Lý tưởng cho {extracted_info.suitable_for}"
+
         try:
             search_response = rag_system._answer_with_vector(user_key, search_query, user_info, purchase_history, is_image_upload=True) 
 
-            # --- Save chat history ONLY for authenticated users --- 
             if user_key != "anonymous":
                 try:
                     rag_system.chat_history.add_chat(user_key, search_query, search_response)
