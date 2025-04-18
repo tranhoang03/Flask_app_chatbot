@@ -3,7 +3,7 @@ eventlet.monkey_patch()
 import base64
 import os
 from flask import Flask, render_template, request, session, jsonify, redirect, url_for
-from flask_socketio import SocketIO, emit, join_room, leave_room # Import SocketIO components
+from flask_socketio import SocketIO, emit, join_room, leave_room 
 from models.rag_system import OptimizedRAGSystem
 from models.face_auth import FaceAuthTransformer
 from config import Config
@@ -13,7 +13,6 @@ import sqlite3
 import base64
 import numpy as np
 import cv2
-from models.send_img import get_info
 import logging
 from utils import get_purchase_history
 from models.extract_info import LLMExtract
@@ -58,8 +57,7 @@ def index():
             purchase_history = get_purchase_history(user_info['id'])
         return render_template('chat.html', user_info=user_info, purchase_history=purchase_history)
     else:
-        # Neither authenticated nor anonymous -> choice page
-        # Clear potentially inconsistent state just in case
+
         session.pop('authenticated', None)
         session.pop('user_info', None)
         session.pop('anonymous', None)
@@ -69,18 +67,16 @@ def index():
 def chat():
     """Handles incoming chat messages from authenticated or anonymous users."""
 
-    # Determine user_key and user_info STRICTLY based on session flags
-    user_key = "anonymous" # Default to anonymous
-    scoped_user_info = None # Default user_info for this request scope
+    user_key = "anonymous" 
+    scoped_user_info = None
 
     if session.get('authenticated', False):
-        # Try to get authenticated user info ONLY if authenticated flag is true
         auth_user_info = session.get('user_info')
         if auth_user_info and 'id' in auth_user_info:
-            scoped_user_info = auth_user_info # Set user_info for this scope
+            scoped_user_info = auth_user_info
             user_key = str(scoped_user_info['id'])
         else:
-            # Authenticated flag is true, but no user_info? Session corruption? Fallback.
+         
             print("WARNING: Authenticated session but no user_info found. Treating as anonymous.")
             session.pop('authenticated', None) # Clean up corrupted state
             session['anonymous'] = True # Force anonymous
@@ -118,7 +114,7 @@ def chat():
 @app.route('/logout')
 def logout():
     """Logs the user out by clearing relevant session keys."""
-    # user_id_to_clear = session.get('user_info', {}).get('id') # Get ID before popping if history clearing on logout is needed
+  
     
     session.pop('authenticated', None)
     session.pop('user_info', None)
@@ -132,18 +128,18 @@ def logout():
 @app.route('/authenticate')
 def authenticate():
     """Serves the face authentication page."""
-    # Clear anonymous flag if user chooses to authenticate from choice page
+
     session.pop('anonymous', None)
     return render_template('auth.html')
 
 @app.route('/start_anonymous_chat')
 def start_anonymous_chat():
     """Sets flag for anonymous chat and redirects to index."""
-    # Ensure other potentially conflicting keys are removed FIRST
+
     session.pop('authenticated', None)
     session.pop('user_info', None)
-    session.pop('anonymous', None) # Pop it first to ensure clean state before setting
-    
+    session.pop('anonymous', None) 
+
     # Now, explicitly set anonymous mode
     session['anonymous'] = True
     
@@ -156,13 +152,12 @@ def start_anonymous_chat():
 def register():
     """Handles displaying and processing the registration form (simulation)."""
     if request.method == 'POST':
-        # Simulate processing registration data
         name = request.form.get('name')
         user_id = request.form.get('user_id')
         print(f"Simulating registration for: Name={name}, ID={user_id}")
-        return redirect(url_for('index')) # Or redirect to authenticate?
-    # For GET request, show the registration form
-    return render_template('register.html') # New template needed
+        return redirect(url_for('index'))
+
+    return render_template('register.html') 
 
 # --- WebSocket Events ---
 @socketio.on('connect')
@@ -170,9 +165,9 @@ def handle_connect():
     """Handles new client connections for authentication."""
     sid = request.sid
     print(f'Client connected for auth: {sid}')
-    # Create a unique FaceAuthTransformer instance for this session
+
     client_auth_transformers[sid] = FaceAuthTransformer()
-    join_room(sid) # Use session ID as a room for targeted messages
+    join_room(sid) 
     print(f"Auth transformer created for SID: {sid}")
 
 @socketio.on('disconnect')
@@ -180,7 +175,7 @@ def handle_disconnect():
     """Cleans up when a client disconnects."""
     sid = request.sid
     print(f'Client disconnected: {sid}')
-    # Remove the transformer instance for this client
+
     if sid in client_auth_transformers:
         del client_auth_transformers[sid]
         print(f"Auth transformer removed for SID: {sid}")
@@ -224,7 +219,7 @@ def handle_video_frame(data):
             emit_data['success'] = True
             emit_data['user_info'] = match_outcome
             emit('auth_result', emit_data, room=sid)
-        elif match_outcome is False: # Explicit failure (e.g., unknown face)
+        elif match_outcome is False: 
             print(f"Authentication explicitly failed for SID: {sid}")
             emit_data['success'] = False
             emit_data['message'] = 'Không nhận dạng được khuôn mặt.'
@@ -232,7 +227,7 @@ def handle_video_frame(data):
         else: # No face detected or processing issue
             emit_data['success'] = False
             emit_data['message'] = 'Đang xử lý...'
-            # Send the status update anyway (includes bbox/conf if available)   
+
             emit('auth_result', emit_data, room=sid)
 
     except Exception as e:
@@ -249,7 +244,7 @@ def confirm_auth():
     if not user_info or 'id' not in user_info or 'name' not in user_info:
         return jsonify({'status': 'error', 'message': 'Invalid user info provided'}), 400
 
-    # Store auth state and user info in the session
+
     session['authenticated'] = True
     session['user_info'] = user_info
     print(f"Session confirmed for user: {user_info.get('name')}")
@@ -264,7 +259,6 @@ def process_image():
     user_info = None 
     purchase_history = [] 
 
-    # Determine user info based on session
     if session.get('authenticated', False):
         auth_user_info = session.get('user_info')
         if auth_user_info and 'id' in auth_user_info:
@@ -279,7 +273,7 @@ def process_image():
         recent_history = "" 
 
     try:
-        # Expect only multipart/form-data now
+
         if not request.content_type.startswith('multipart/form-data'):
             print(f"Unsupported Content-Type for image upload: {request.content_type}")
             return jsonify({'error': 'Invalid request format for image upload'}), 415
@@ -300,7 +294,7 @@ def process_image():
                 print(f"Error saving uploaded file: {save_err}")
                 return jsonify({'error': 'Could not save uploaded file'}), 500
         else:
-             # This case might be redundant but kept for robustness
+
             return jsonify({'error': 'Invalid file provided'}), 400
 
         if not file_path:
@@ -313,12 +307,12 @@ def process_image():
         if not extracted_info:
             return jsonify({'error': 'Failed to extract information from image'}), 500
 
-        # --- Format Extracted Information into a Query ---
+
         search_query = f"Sự kết hợp từ các thành phần như {extracted_info.ingredients}, " \
                f"tạo nên một đồ uống có màu {extracted_info.drink_color}, " \
                f"thường được phục vụ trong {extracted_info.container_type}."
 
-        # Thêm phần topping nếu có
+
         if extracted_info.topping != 'None':
             search_query += f" Trên bề mặt được phủ {extracted_info.topping}"
 
@@ -330,7 +324,7 @@ def process_image():
             if user_key != "anonymous":
                 try:
                     rag_system.chat_history.add_chat(user_key, search_query, search_response)
-                    print(f"Saved image search history for user: {user_key}") # Optional print
+                    print(f"Saved image search history for user: {user_key}") 
                 except Exception as chat_save_err:
                     print(f"Error saving image search chat history for user {user_key}: {chat_save_err}")
    
@@ -341,7 +335,6 @@ def process_image():
                 except Exception as rm_err: print(f"Error cleaning up file {file_path} after search error: {rm_err}")
             return jsonify({'error': 'Exception during information retrieval'}), 500
         
-        # --- Cleanup successful upload --- 
         if os.path.exists(file_path):
             try:    
                 os.remove(file_path)
@@ -352,18 +345,18 @@ def process_image():
 
     except Exception as e:
         print(f"An unexpected error occurred in /process_image: {e}")
-        if file_path and os.path.exists(file_path): # Check if file_path exists before trying to remove
+        if file_path and os.path.exists(file_path): 
              try: os.remove(file_path)
              except Exception as rm_err: print(f"Error cleaning up file {file_path} after unexpected error: {rm_err}")
         return jsonify({'error': 'An unexpected server error occurred'}), 500
 
 if __name__ == '__main__':
-    # Ensure the templates and static folders exist
+
     if not os.path.exists('templates'):
         os.makedirs('templates')
     if not os.path.exists('static'):
         os.makedirs('static')
 
     print("Starting Flask-SocketIO server with separate chat histories...")
-    # Use eventlet for async mode, disable reloader for stability with eventlet/gevent
+
     socketio.run(app, debug=True, host='0.0.0.0', port=5000, use_reloader=False) 
