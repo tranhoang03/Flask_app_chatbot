@@ -159,7 +159,7 @@ class PromptManager:
     {history}
 
     ### Nhiệm vụ:
-    1. Phân tích mô tả ảnh và kết quả phân tích để tìm các **sản phẩm đồ uống cụ thể có liên quan trực tiếp**.
+    1. Phân tích mô tả ảnh và kết quả phân tích để tìm các **sản phẩm đồ uống cụ thể có liên quan dựa trên kết quả phân tích**.
     2. CHỈ gợi ý sản phẩm, KHÔNG đề cập đến mô tả hay nhận xét về mô tả của khách hàng 
     2. Với mỗi sản phẩm, hiển thị thông tin bao gồm: **tên sản phẩm, kích cỡ, giá, các tùy chọn thêm (nếu có)**.
     3. Nếu **không có sản phẩm cụ thể phù hợp**, hãy gợi ý người dùng khám phá thêm các **dòng đồ uống phổ biến** trong menu.
@@ -167,5 +167,5 @@ class PromptManager:
     5. Giữ văn phong **thân thiện, gần gũi, dễ hiểu**
     6. Tránh lặp lại thông tin không cần thiết, đảm bảo trả lời ngắn gọn và mang tính định hướng.
     7. Không đề cập đến id đồ uống và id danh mục ở câu trả lời.
-    8. Đưa ra danh sách rõ ràng đẹp mắt nếu có nhiều lựa chọ
+    8. Đưa ra danh sách rõ ràng đẹp mắt nếu có nhiều lựa chọn.
      """
