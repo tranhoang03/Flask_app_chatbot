@@ -17,7 +17,6 @@ def load_table_data(db_path: str) -> List[Dict[str, Any]]:
         
         documents = []
         
-        # Define the Vietnamese column name mapping with diacritics and spaces
         column_name_mapping = {
             # Bảng Categories
             "Id": "id danh mục",
@@ -99,8 +98,6 @@ def load_table_data(db_path: str) -> List[Dict[str, Any]]:
                 # Create a dictionary of column names and values
                 row_dict = {}
                 for col_name, val in zip(column_names, row):
-                    # Skip specific columns like embeddings or pictures
-                    # Check against original column names
                     if (table_name == "customers" and col_name in ["embedding", "picture"]) or \
                        (table_name == "Product" and col_name == "Link_Image"):
                         continue
@@ -109,19 +106,15 @@ def load_table_data(db_path: str) -> List[Dict[str, Any]]:
                 content_parts = []
                 for k, v in row_dict.items():
                     display_name = column_name_mapping.get(k, k) 
-                    # Format nicely, handling None values
                     value_str = str(v) if v is not None else "không có"
                     content_parts.append(f"{display_name}: {value_str}")
 
-                # Include table name for context
                 content = f"Bảng {table_name}: " + ", ".join(content_parts)
                 
-                # Create metadata
                 metadata = {
                     "table": table_name,
-                    # Store original column names in metadata
-                    "columns": list(row_dict.keys()), 
-                    "data": row_dict, # Original data with original keys
+                     "columns": list(row_dict.keys()), 
+                    "data": row_dict, 
                     "original_row_index": row_idx 
                 }
                 
@@ -149,16 +142,13 @@ def execute_sql_query(db_path: str, query: str, timeout: int = 30) -> List[Dict[
         conn = sqlite3.connect(db_path, timeout=timeout)
         cursor = conn.cursor()
         
-        # Execute query
         cursor.execute(query)
         
-        # Get column names
+  
         columns = [description[0] for description in cursor.description]
-        
-        # Fetch results
+
         rows = cursor.fetchall()
         
-        # Convert to list of dictionaries
         results = []
         for row in rows:
             result_dict = dict(zip(columns, row))
@@ -178,7 +168,7 @@ def format_sql_results(results: List[Dict[str, Any]]) -> str:
     
     formatted_results = []
     for result in results:
-        # Format each result as a string of key-value pairs
+   
         result_str = ", ".join([
             f"{k}: {v}" for k, v in result.items()
         ])
@@ -208,7 +198,6 @@ def validate_sql_query(query: str) -> bool:
         if semicolon_count == 1 and not query_norm.endswith(';'):
             return log_invalid("Semicolon not at end of query")
 
-        # Loại bỏ dấu ; cuối nếu có để tiếp tục kiểm tra cú pháp
         if query_norm.endswith(';'):
             query_norm = query_norm[:-1].rstrip()
             query_upper = query_norm.upper()
@@ -216,20 +205,19 @@ def validate_sql_query(query: str) -> bool:
         if not query_upper.startswith("SELECT"):
             return log_invalid(f"Not a SELECT statement: {query_norm}")
 
-        # Check for dangerous keywords
+    
         dangerous_keywords = ["DROP", "DELETE", "UPDATE", "INSERT", "ALTER", "TRUNCATE"]
         if any(re.search(rf"\b{kw}\b", query_upper) for kw in dangerous_keywords):
             return log_invalid(f"Dangerous keyword found: {query_norm}")
 
-        # Check for comment injection
         if '--' in query_norm:
             return log_invalid("Potential comment injection ('--')")
 
-        # Essential clause
+
         if "FROM" not in query_upper:
             return log_invalid("Missing FROM clause")
 
-        # Balanced parentheses
+
         if query_norm.count('(') != query_norm.count(')'):
             return log_invalid("Unbalanced parentheses")
 
