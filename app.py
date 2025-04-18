@@ -333,8 +333,7 @@ def process_image():
                     print(f"Saved image search history for user: {user_key}") # Optional print
                 except Exception as chat_save_err:
                     print(f"Error saving image search chat history for user {user_key}: {chat_save_err}")
-                    # Continue even if history saving fails
-
+   
         except Exception as search_err: 
             print(f"Exception during vector search: {search_err}")
             if os.path.exists(file_path):
@@ -344,7 +343,7 @@ def process_image():
         
         # --- Cleanup successful upload --- 
         if os.path.exists(file_path):
-            try:
+            try:    
                 os.remove(file_path)
             except Exception as rm_err:
                 print(f"Error cleaning up file {file_path} after success: {rm_err}")
