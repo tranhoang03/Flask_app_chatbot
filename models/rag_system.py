@@ -1,13 +1,12 @@
 from typing import List
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
 import os
-import json
+
 import sqlite3
 import streamlit as st
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.embeddings import Embeddings  # <- THÊM DÒNG NÀY
+from langchain_core.embeddings import Embeddings 
 
 from transformers import AutoModel, AutoTokenizer
 import torch
@@ -347,7 +346,6 @@ class OptimizedRAGSystem:
             sql_query_string = sql_query_response.content.strip() if hasattr(sql_query_response, 'content') else str(sql_query_response).strip()
             print("Generated SQL query:", sql_query_string)
 
-            # 4. Kiểm tra tính an toàn và hợp lệ của câu lệnh
             if not validate_sql_query(sql_query_string):
                 return "Xin lỗi, tôi không thể thực hiện truy vấn này vì lý do an toàn hoặc truy vấn không hợp lệ."
 
@@ -358,13 +356,10 @@ class OptimizedRAGSystem:
                 self.config.db_timeout
             )
 
-            # 6. Định dạng kết quả truy vấn
-            formatted_results = format_sql_results(results)
-
-            # 7. Lấy lịch sử chat gần nhất
+      
+            formatted_results = format_sql_results(results)    
             recent_history = self.chat_history.get_recent_history(user_key)
 
-            # 8. Tạo prompt sinh phản hồi tự nhiên từ kết quả SQL
             response_prompt = PromptManager.get_sql_response_prompt(
                 query=query,
                 results=formatted_results,
@@ -373,7 +368,6 @@ class OptimizedRAGSystem:
                 purchase_history=purchase_history
             )
             print(response_prompt)
-            # 9. Gọi LLM để tạo phản hồi cuối cùng
             final_response = self.llm.invoke(response_prompt)
             return final_response.content.strip() if hasattr(final_response, 'content') else str(final_response).strip()
 
@@ -385,9 +379,9 @@ class OptimizedRAGSystem:
     def answer_query(self, user_key: str, query: str) -> str:
         """Process query and return answer"""
         try:
-            # Determine if calculation is needed
+
             needs_sql = self._needs_calculation(query, user_key)
-            print(f"LLM decision: {'1' if needs_sql else '0'}")  # Print 1 for SQL, 0 for vector search
+            print(f"LLM decision: {'1' if needs_sql else '0'}")  
             
             # Fetch user information and purchase history
             user_info = self._get_user_info(user_key)
@@ -397,7 +391,7 @@ class OptimizedRAGSystem:
                 response = self._answer_with_sql(user_key, query, user_info, purchase_history)
             else:
                 response = self._answer_with_vector(user_key, query, user_info, purchase_history)
-            # Save t chat history for the specific user
+
             self.chat_history.add_chat(user_key, query, response)
             
             return response
@@ -411,9 +405,9 @@ class OptimizedRAGSystem:
         """Fetch user information based on user key"""
         if user_key == "anonymous":
             return None
-        # Assuming user_key is the user ID when authenticated
+
         try:
-            # Example: Fetch user information from a database
+
             db_path = os.path.join(os.path.dirname(__file__), '..', 'Database.db')
             if not os.path.exists(db_path):
                 db_path = os.path.join(os.path.dirname(__file__), 'Database.db')
