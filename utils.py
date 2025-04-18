@@ -20,13 +20,16 @@ def load_table_data(db_path: str) -> List[Dict[str, Any]]:
         column_name_mapping = {
             # Bảng Categories
             "Id": "id danh mục",
-            "Name": "tên danh mục", 
+            "Name_Cat": "tên danh mục", 
             "Description": "mô tả danh mục",
 
             # Bảng Product
             "Categories_id": "id danh mục",
             # "Id": "id sản phẩm",       
-            # "Name": "tên sản phẩm",       
+            "Name_Product": "tên sản phẩm",       
+            "Descriptions": "mô tả sản phẩm",
+            "Link_Image": "link ảnh",
+            # Bảng Variant
             "Product_Prep": "thành phần sản phẩm",
             "Calories": "calo",
             "Dietary_Fibre_g": "chất xơ",
@@ -36,13 +39,10 @@ def load_table_data(db_path: str) -> List[Dict[str, Any]]:
             "Vitamin_C": "vitamin C",
             "Caffeine_mg": "caffeine",
             "Price": "đơn giá",
-            "Sales_rank": "hạng bán chạy",
-            "Descriptions": "mô tả sản phẩm",
-            "Link_Image": "link ảnh",
-
+            "Sales_rank": "bán chạy",
             # Bảng Store
             # "Id": "id cửa hàng",          
-            # "Name": "tên cửa hàng",        
+             "Name_Store": "tên cửa hàng",        
             "Address": "địa chỉ",
             "Phone": "số điện thoại",
             "Open_Close": "giờ mở cửa đóng cửa",
